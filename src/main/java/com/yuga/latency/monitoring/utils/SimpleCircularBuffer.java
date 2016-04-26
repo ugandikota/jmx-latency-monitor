@@ -8,7 +8,7 @@ import java.util.concurrent.atomic.AtomicLong;
  * 
  * @author Yuga Gandikota
  */
-public class SimpleCircularBuffer<T> {
+public class SimpleCircularBuffer<T> implements CircularBuffer<T> {
 	
 	/* backend structure for the circular buffer*/ 
 	private T[] buffer;
@@ -24,7 +24,7 @@ public class SimpleCircularBuffer<T> {
 	 * 
 	 * @param bufferSize size of the circular buffer.
 	 */
-	SimpleCircularBuffer(Class<T> aType, int bufferSize) {
+	public SimpleCircularBuffer(Class<T> aType, int bufferSize) {
 		buffer = (T[]) Array.newInstance(aType, bufferSize);
 		type = aType;
 	}

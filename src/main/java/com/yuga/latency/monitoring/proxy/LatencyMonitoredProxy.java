@@ -4,7 +4,9 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
 import javax.management.Attribute;
 import javax.management.AttributeChangeNotification;
@@ -28,8 +30,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jmx.export.MBeanExportException;
 
+import com.yuga.latency.monitoring.exception.LatencyMonitoringProxyException;
 import com.yuga.latency.monitoring.proxy.naming.AttributeNamingStrategy;
 import com.yuga.latency.monitoring.utils.LatencyMonitor;
+import com.yuga.latency.monitoring.utils.LatencyMonitorFactory;
+import com.yuga.latency.monitoring.utils.SimpleLatencyMonitorFactory;
 
 /**
  * Creates proxy that maintains latency information and exposes itself as a MBean.
@@ -44,6 +49,8 @@ public class LatencyMonitoredProxy
 			DynamicMBean {
 	
 	private static final Logger LOGGER = LoggerFactory.getLogger(LatencyMonitoredProxy.class);
+
+	private static final String MBEAN_INFO_CHANGED_EVENT = "jmx.mbean.info.changed";
 
 	/* Source implementation that we have to build proxy for. */
 	protected Object source;
@@ -64,6 +71,8 @@ public class LatencyMonitoredProxy
 	private JMXLatencyMonitored annotation;
 
 	private String timeUnitSufix = "";
+
+	private LatencyMonitorFactory latencyMonitorFactory;
 	
 
 	/**
@@ -79,19 +88,25 @@ public class LatencyMonitoredProxy
 	 * @throws IllegalArgumentException 
 	 * @throws IllegalAccessException 
 	 * @throws InstantiationException 
+	 * @throws ClassNotFoundException 
 	 * @throws MBeanExportException
 	 * @throws MalformedObjectNameException
 	 */
-	protected LatencyMonitoredProxy(Object aBean, JMXLatencyMonitored aAnnotation) throws NoSuchMethodException, SecurityException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException 
-	 {
+	protected LatencyMonitoredProxy(Object aBean, JMXLatencyMonitored aAnnotation) 
+	throws LatencyMonitoringProxyException {
 		
 		annotation = aAnnotation;
 		source = aBean;
 		
 		Class<?>[] aBeanTypes = annotation.types();
 		
-		Constructor<?> cons = annotation.namingStrategyClass().getConstructor();
-		namingStrategy = (AttributeNamingStrategy) cons.newInstance();		
+		try {
+			Constructor<?> cons = annotation.namingStrategyClass().getConstructor();
+			namingStrategy = (AttributeNamingStrategy) cons.newInstance();
+		}
+		catch (Exception e) {
+			throw new LatencyMonitoringProxyException(e.getMessage(), e);
+		}
 		
 		Object result = java.lang.reflect.Proxy.newProxyInstance(
 				aBean.getClass().getClassLoader(), 
@@ -114,7 +129,7 @@ public class LatencyMonitoredProxy
 					if (LOGGER.isDebugEnabled()) {
 						LOGGER.debug("Adding monitor for method:"+method.toString());
 					}
-					monitors.putIfAbsent(key,  new LatencyMonitor(annotation.sampleSize(), annotation.units()));
+					monitors.putIfAbsent(key,  newLatencyMonitor(annotation.sampleSize(), annotation.units()));
 				}
 			}
 		}
@@ -130,10 +145,12 @@ public class LatencyMonitoredProxy
 	}
 
 	/* Gets current monitor allocted for the given key, if there is nothing allocated yet, it will allocate new monitor */
-	private LatencyMonitor getMonitor(String aKey) {
+	private LatencyMonitor getMonitor(String aKey) 
+	throws LatencyMonitoringProxyException {
+		
 		LatencyMonitor monitor = monitors.get(aKey);
 		if (monitor == null) {
-			monitor = new LatencyMonitor(annotation.sampleSize(), annotation.units());
+			monitor = newLatencyMonitor(annotation.sampleSize(), annotation.units());
 			LatencyMonitor existing = monitors.putIfAbsent(aKey, monitor);
 			if ((existing != monitor) && (existing != null)) {
 				monitor = existing;
@@ -144,15 +161,58 @@ public class LatencyMonitoredProxy
 		}
 		return monitor;
 	}
+	
+	/* create a new instance of LatencyMonitor using the LatencyMonitorFactory*/
+	protected LatencyMonitor newLatencyMonitor(int sampleSize, TimeUnit units) 
+	throws LatencyMonitoringProxyException {
+		return getLatencyMonitorFactory().createLatencyMonitor(sampleSize, units);
+	}
+
+	/**
+	 * Returns LatencyMonitorFactory instance that was previously created. 
+	 * If none was created, will check for property <pre>com.yuga.latency.monitoring.proxy.LatencyMonitorFactory<pre>
+	 * If the property is set, it will instantiate LatencyMonitorFactory instance based on the value of the property.
+	 * If the property is not set, it will use the default factory implementation <code>SimpleLatencyMonitorFactory</code>
+	 * @return
+	 * @throws LatencyMonitoringProxyException if LatencyMonitorFactory could not be instantiated.
+	 * @see LatencyMonitorFactory
+	 * @see SimpleLatencyMonitorFactory
+	 */
+	protected LatencyMonitorFactory getLatencyMonitorFactory() 
+	throws LatencyMonitoringProxyException 
+	{
+		
+		if (latencyMonitorFactory == null) {
+			String lmFactoryImplClassName = System.getProperty(LatencyMonitorFactory.LATENCY_MONITOR_FACTORY_PROPERTY_NAME);
+			if (lmFactoryImplClassName != null && !lmFactoryImplClassName.isEmpty()) {
+				if (LOGGER.isInfoEnabled()) {
+					LOGGER.info("Found property '{}' set to '{}'", LatencyMonitorFactory.LATENCY_MONITOR_FACTORY_PROPERTY_NAME, lmFactoryImplClassName);
+				}
+				try {
+					Class<LatencyMonitorFactory> factoryClass = (Class<LatencyMonitorFactory>) Class.forName(lmFactoryImplClassName);
+					Constructor<?> cons = factoryClass.getConstructor();
+					latencyMonitorFactory = (LatencyMonitorFactory) cons.newInstance();
+				} 
+				catch (Exception e) {
+					throw new LatencyMonitoringProxyException(e.getMessage(), e);
+				}
+			}
+			else {
+				latencyMonitorFactory = new SimpleLatencyMonitorFactory();
+			}
+		}
+		return latencyMonitorFactory;
+	}
+	
 
 	/* Sends change notification to notify clients of changes. */
 	private void sendNotification(String aKey, LatencyMonitor aMonitor) {
 		notificationSequence++;
-		Notification n = new Notification("jmx.mbean.info.changed", source.getClass().getName(), notificationSequence );
+		Notification n = new Notification(MBEAN_INFO_CHANGED_EVENT, source.getClass().getName(), notificationSequence );
 		n.setUserData(getMBeanInfo());
 		sendNotification(n);
 		if (LOGGER.isDebugEnabled()) {
-			LOGGER.debug(annotation.beanName()+":: Sending notification "+n.getMessage()+", seq:"+notificationSequence);
+			LOGGER.debug("{} :: Sending notification {}, seq:{}",annotation.beanName(), n.getMessage(), notificationSequence);
 		}
 	}
 
@@ -235,15 +295,16 @@ public class LatencyMonitoredProxy
 	public MBeanInfo getMBeanInfo() {
 		MBeanAttributeInfo[] attrs = new MBeanAttributeInfo[monitors.size()];
 		int i = 0;
-		for(String key : monitors.keySet()) {
-			Object o = monitors.get(key);
-			if (o != null) {
-				MBeanAttributeInfo attr = new MBeanAttributeInfo(key, String.class.getName(), 
-																key, true, false, false);
+		for(Entry<String, LatencyMonitor> entry : monitors.entrySet()) {
+			//Object o = monitors.get(entry.key);
+			if (entry.getValue() != null) {
+				MBeanAttributeInfo attr = new MBeanAttributeInfo(entry.getKey(), String.class.getName(), 
+																entry.getKey(), true, false, false);
 				attrs[i] = attr;
 				i++;
 			}
 		}
+
 		return new MBeanInfo(annotation.beanName(), annotation.beanName(), 
 									attrs, 
 									new MBeanConstructorInfo[]{},

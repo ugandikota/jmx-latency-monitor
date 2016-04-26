@@ -22,9 +22,9 @@
 		</developer>
 	</developers>
 	<scm>
-		<connection>scm:git:git@github.com:ugandikota/jmx-monitor.git</connection>
-		<developerConnection>scm:git:git@github.com:ugandikota/jmx-monitor.git</developerConnection>
-		<url>git@github.com:ugandikota/jmx-monitor.git</url>
+		<connection>scm:git:git@github.com:ugandikota/jmx-latency-monitor.git</connection>
+		<developerConnection>scm:git:git@github.com:ugandikota/jmx-latency-monitor.git</developerConnection>
+		<url>git@github.com:ugandikota/jmx-latency-monitor.git</url>
 	</scm>
 	<properties>
 		<spring.version>3.0.0.RELEASE</spring.version>
