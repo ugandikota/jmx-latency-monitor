@@ -22,8 +22,8 @@
 		</developer>
 	</developers>
 	<scm>
-		<connection>scm:git:git://github.com/ugandikota/jmx-latency-monitor.git</connection>
-		<developerConnection>scm:git:git@github.com:ugandikota/jmx-latency-monitor.git</developerConnection>
+		<connection>https://github.com/ugandikota/jmx-latency-monitor.git</connection>
+		<developerConnection>https://github.com/ugandikota/jmx-latency-monitor.git</developerConnection>
 		<url>https://github.com/ugandikota/jmx-latency-monitor.git</url>
 	</scm>
 	<properties>
