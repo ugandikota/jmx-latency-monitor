@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.github.yuga-gandikota</groupId>
 	<artifactId>jmx-latency-monitor</artifactId>
-	<version>0.0.2</version>
+	<version>0.0.3-SNAPSHOT</version>
 	<name>JMX Latency Monitor</name>
 	<description>spring annotation based implementation that creates a latency monitoring proxy and exposes itself as an MBean.</description>
 	<url>https://github.com/yuga-gandikota/jmx-latency-monitor</url>
