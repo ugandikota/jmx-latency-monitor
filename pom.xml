@@ -41,10 +41,15 @@
 			<name>Sonatype Nexus snapshot repository</name>
 			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
 		</snapshotRepository>
+<!-- 		<repository> -->
+<!-- 			<id>ossrh</id> -->
+<!-- 			<name>Sonatype Nexus release repository</name> -->
+<!-- 			<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url> -->
+<!-- 		</repository> -->
 		<repository>
-			<id>ossrh</id>
-			<name>Sonatype Nexus release repository</name>
-			<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+			<id>leapfrog-releases</id>
+			<name>Leapfrog Releases Repository</name>
+			<url>http://nexus.leapfrog.com/nexus/content/repositories/releases</url>
 		</repository>
 	</distributionManagement>
 
