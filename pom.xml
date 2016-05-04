@@ -46,9 +46,9 @@
 <!-- 			<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url> -->
 <!-- 		</repository> -->
 		<repository>
-			<id>leapfrog-releases</id>
-			<name>Leapfrog Releases Repository</name>
-			<url>http://nexus.leapfrog.com/nexus/content/repositories/releases</url>
+			<id>leapfrog-thirdparty</id>
+			<name>Leapfrog thirdparty Repository</name>
+			<url>http://nexus.leapfrog.com/nexus/content/repositories/thirdparty</url>
 		</repository>
 	</distributionManagement>
 
