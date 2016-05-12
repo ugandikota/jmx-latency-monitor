@@ -1,4 +1,4 @@
-package com.yuga.latency.monitoring.exception;
+package com.github.yuga.gandikota.latency.monitoring.exception;
 
 public class LatencyMonitoringProxyException extends Exception {
 

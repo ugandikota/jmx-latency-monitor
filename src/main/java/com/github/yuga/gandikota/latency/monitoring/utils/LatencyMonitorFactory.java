@@ -1,4 +1,4 @@
-package com.yuga.latency.monitoring.utils;
+package com.github.yuga.gandikota.latency.monitoring.utils;
 
 import java.util.concurrent.TimeUnit;
 
@@ -12,7 +12,7 @@ import java.util.concurrent.TimeUnit;
  */
 public interface LatencyMonitorFactory {
 	
-	static final String LATENCY_MONITOR_FACTORY_PROPERTY_NAME = "com.yuga.latency.monitoring.proxy.LatencyMonitorFactory";
+	static final String LATENCY_MONITOR_FACTORY_PROPERTY_NAME = "com.github.yuga.gandikota.latency.monitoring.proxy.LatencyMonitorFactory";
 	
 	public LatencyMonitor createLatencyMonitor(int aSampleSize, TimeUnit aUnit);
 }

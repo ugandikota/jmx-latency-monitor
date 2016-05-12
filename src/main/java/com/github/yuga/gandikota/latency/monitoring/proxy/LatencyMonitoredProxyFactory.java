@@ -1,4 +1,4 @@
-package com.yuga.latency.monitoring.proxy;
+package com.github.yuga.gandikota.latency.monitoring.proxy;
 
 import javax.management.ObjectName;
 
@@ -60,7 +60,7 @@ implements
 		if (annotation != null) {
 			try {
 				if (LOGGER.isInfoEnabled()) {
-					LOGGER.info("creating proxy for beanName:'"+beanName);
+					LOGGER.info("creating proxy for beanName:{}, JMXName:{}'"+beanName, annotation.beanName());
 				}
 				LatencyMonitoredProxy proxy = new LatencyMonitoredProxy(bean, annotation);
 				result = proxy.getProxy();

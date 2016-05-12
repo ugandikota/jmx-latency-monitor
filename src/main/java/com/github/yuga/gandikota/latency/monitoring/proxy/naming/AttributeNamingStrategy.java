@@ -1,4 +1,4 @@
-package com.yuga.latency.monitoring.proxy.naming;
+package com.github.yuga.gandikota.latency.monitoring.proxy.naming;
 
 import java.lang.reflect.Method;
 

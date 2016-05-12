@@ -1,4 +1,4 @@
-package com.yuga.latency.monitoring.proxy;
+package com.github.yuga.gandikota.latency.monitoring.proxy;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationHandler;
@@ -30,11 +30,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jmx.export.MBeanExportException;
 
-import com.yuga.latency.monitoring.exception.LatencyMonitoringProxyException;
-import com.yuga.latency.monitoring.proxy.naming.AttributeNamingStrategy;
-import com.yuga.latency.monitoring.utils.LatencyMonitor;
-import com.yuga.latency.monitoring.utils.LatencyMonitorFactory;
-import com.yuga.latency.monitoring.utils.SimpleLatencyMonitorFactory;
+import com.github.yuga.gandikota.latency.monitoring.exception.LatencyMonitoringProxyException;
+import com.github.yuga.gandikota.latency.monitoring.proxy.naming.AttributeNamingStrategy;
+import com.github.yuga.gandikota.latency.monitoring.utils.LatencyMonitor;
+import com.github.yuga.gandikota.latency.monitoring.utils.LatencyMonitorFactory;
+import com.github.yuga.gandikota.latency.monitoring.utils.SimpleLatencyMonitorFactory;
 
 /**
  * Creates proxy that maintains latency information and exposes itself as a MBean.
@@ -101,6 +101,9 @@ public class LatencyMonitoredProxy
 		Class<?>[] aBeanTypes = annotation.types();
 		
 		try {
+			if (LOGGER.isDebugEnabled()) {
+				LOGGER.debug("Using naming strategy class:{} for bean:{}", annotation.namingStrategyClass().getName(), annotation.beanName());
+			}			
 			Constructor<?> cons = annotation.namingStrategyClass().getConstructor();
 			namingStrategy = (AttributeNamingStrategy) cons.newInstance();
 		}
@@ -127,7 +130,7 @@ public class LatencyMonitoredProxy
 				for(Method method : allMethods) {
 					String key  = createKey(source, annotation.types(), iface, method);
 					if (LOGGER.isDebugEnabled()) {
-						LOGGER.debug("Adding monitor for method:"+method.toString());
+						LOGGER.debug("Adding monitor. key:{}, method:{}", key, method.toString());
 					}
 					monitors.putIfAbsent(key,  newLatencyMonitor(annotation.sampleSize(), annotation.units()));
 				}
@@ -170,7 +173,7 @@ public class LatencyMonitoredProxy
 
 	/**
 	 * Returns LatencyMonitorFactory instance that was previously created. 
-	 * If none was created, will check for property <pre>com.yuga.latency.monitoring.proxy.LatencyMonitorFactory<pre>
+	 * If none was created, will check for property <pre>com.github.yuga.gandikota.latency.monitoring.proxy.LatencyMonitorFactory<pre>
 	 * If the property is set, it will instantiate LatencyMonitorFactory instance based on the value of the property.
 	 * If the property is not set, it will use the default factory implementation <code>SimpleLatencyMonitorFactory</code>
 	 * @return

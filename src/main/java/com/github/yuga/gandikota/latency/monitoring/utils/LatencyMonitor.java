@@ -1,4 +1,4 @@
-package com.yuga.latency.monitoring.utils;
+package com.github.yuga.gandikota.latency.monitoring.utils;
 
 /**
  * Class to collect samples in nano seconds and keep track of average. 

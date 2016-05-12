@@ -1,4 +1,4 @@
-package com.yuga.latency.monitoring.utils;
+package com.github.yuga.gandikota.latency.monitoring.utils;
 
 import java.lang.reflect.Array;
 import java.util.concurrent.atomic.AtomicLong;

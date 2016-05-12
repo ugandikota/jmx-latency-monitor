@@ -1,4 +1,4 @@
-package com.yuga.latency.monitoring.utils;
+package com.github.yuga.gandikota.latency.monitoring.utils;
 
 import java.util.concurrent.TimeUnit;
 

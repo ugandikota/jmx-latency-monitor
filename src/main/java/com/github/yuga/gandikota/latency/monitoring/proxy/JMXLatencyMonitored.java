@@ -1,4 +1,4 @@
-package com.yuga.latency.monitoring.proxy;
+package com.github.yuga.gandikota.latency.monitoring.proxy;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
@@ -6,9 +6,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.ElementType;
 import java.util.concurrent.TimeUnit;
 
-import org.springframework.stereotype.Component;
-
-import com.yuga.latency.monitoring.proxy.naming.DefaultAttributeNamingStrategy;
+import com.github.yuga.gandikota.latency.monitoring.proxy.naming.DefaultAttributeNamingStrategy;
 
 /**
  * Annotation to be used to mark an implementation to be proxy'd and exposed as an MBean  
