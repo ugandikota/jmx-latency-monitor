@@ -358,8 +358,15 @@ public class LatencyMonitoredProxy
 			start = System.nanoTime();
 			result = method.invoke(source, args);
 			success = true;
-		} catch (Exception e) {
-			throw new RuntimeException("unexpected invocation exception: " + e.getMessage());
+		} catch (InvocationTargetException e) {
+			Throwable target = e.getTargetException();
+			if (target != null) {
+				LOGGER.error("invocation exception: " + e.getTargetException());
+				throw target;
+			}
+			else {
+				throw new RuntimeException("unexpected invocation exception: " + e.getMessage(), e);
+			}
 		} finally {
 			if (success) {
 				long end = System.nanoTime();
